@@ -16,10 +16,10 @@ class default_vtable {
 public:
   template<typename T>
   inline void Set(Func f) {
-    data_[std::type_index(typeid(T))] = std::move(f);
+    data_[std::type_index(typeid(T))] = f;
   }
   inline Func Get(Base *base) {
-    return std::move(data_[std::type_index(typeid(*base))]);
+    return data_[std::type_index(typeid(*base))];
   }
 
 private:
