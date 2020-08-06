@@ -14,5 +14,5 @@ FLEX_TARGET(scanner scanner.ll ${CMAKE_CURRENT_BINARY_DIR}/scanner.cc)
 ADD_FLEX_BISON_DEPENDENCY(scanner parser)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(untitled main.cpp general_visitor.h node.h
+add_executable(calculator main.cpp general_visitor.h node.h
         ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})
