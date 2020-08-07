@@ -36,13 +36,11 @@ public:
 template<typename F>
 class NodeVisitor;
 
-template<typename R, typename ...Args>
-class NodeVisitor<R(Args...)> : public GeneralVisitor<NodeVisitor<R(Args...)>, Node, R(Args...)> {
-public:
-  NodeVisitor() {
-    this->template Register<AddNode, SubNode, MulNode, DivNode, NumNode>();
-  }
+using DerivedNodes = std::tuple<AddNode, SubNode, MulNode, DivNode, NumNode>;
 
+template<typename R, typename ...Args>
+class NodeVisitor<R(Args...)> : public GeneralVisitor<NodeVisitor<R(Args...)>, Node, DerivedNodes, R(Args...)> {
+public:
 #define ND(name) virtual R ImplVisit(name *, Args ...) { throw std::runtime_error("not implemented"); }
   NODE_DECLS
 #undef ND

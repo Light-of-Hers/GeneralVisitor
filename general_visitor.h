@@ -26,32 +26,38 @@ private:
   std::map<std::type_index, Func> data_;
 };
 
-template<typename, typename, typename, template<typename, typename> typename = default_vtable>
+template<typename, typename, typename, typename, template<typename, typename> typename = default_vtable>
 class GeneralVisitor;
 
-template<typename Visitor, typename Base,
+template<typename Visitor, typename Base, typename ...Deriveds,
         template<typename, typename> typename Vtable, typename R, typename ...Args>
-class GeneralVisitor<Visitor, Base, R(Args...), Vtable> {
+class GeneralVisitor<Visitor, Base, std::tuple<Deriveds...>, R(Args...), Vtable> {
+  using VtableType = Vtable<Base, R(*)(Visitor *, Base *, Args...)>;
+
 public:
   R Visit(Base *base, Args ...args) {
+    static VtableType vtable = BuildVtable();
     return vtable.Get(base)(static_cast<Visitor *>(this), base, std::forward<Args>(args)...);
   }
 
-protected:
+private:
   template<typename Derived, typename ...Rest>
-  void Register() {
+  static void Register(VtableType &vtable) {
     vtable.template Set<Derived>(
             [](Visitor *visitor, Base *base, Args ...args) -> R {
               return visitor->ImplVisit(static_cast<Derived *>(base), std::forward<Args>(args)...);
             }
     );
     if constexpr (sizeof...(Rest) > 0) {
-      Register<Rest...>();
+      Register<Rest...>(vtable);
     }
   }
 
-private:
-  Vtable<Base, R(*)(Visitor *, Base *, Args...)> vtable;
+  static VtableType BuildVtable() {
+    VtableType vtable;
+    Register<Deriveds...>(vtable);
+    return vtable;
+  }
 };
 
 #endif //UNTITLED_GENERAL_VISITOR_H
