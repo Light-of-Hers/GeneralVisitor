@@ -1,19 +1,5 @@
 #include <iostream>
-#include "node.h"
-
-#define OP_NODE_DECLS OP(AddNode, +) OP(SubNode, -) OP(DivNode, /) OP(MulNode, *)
-
-class Calculator : public NodeVisitor<int()> {
-#define OP(name, op) int ImplVisit(name *node) override { return Visit(node->lhs) op Visit(node->rhs); }
-  OP_NODE_DECLS
-#undef OP
-
-  int ImplVisit(NumNode *node) override {
-    return node->val;
-  }
-};
-
-#undef OP_NODE_DECLS
+#include "calculator.h"
 
 extern int yyparse(Node **);
 extern int yylineno;
