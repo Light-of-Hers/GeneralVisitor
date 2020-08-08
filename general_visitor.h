@@ -60,4 +60,10 @@ private:
   }
 };
 
+template<typename ...Visitors>
+class MultiVisitors : public Visitors ... {
+public:
+  using Visitors::Visit...;
+};
+
 #endif //UNTITLED_GENERAL_VISITOR_H
