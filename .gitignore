@@ -4,3 +4,4 @@ cmake-build-debug/
 build/
 *.o
 cmake-build-release/
+.clang-format

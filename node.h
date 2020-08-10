@@ -16,12 +16,12 @@ public:
 #define OP_NODE_DECLS ND(AddNode) ND(SubNode) ND(MulNode) ND(DivNode)
 #define NODE_DECLS ND(NumNode) OP_NODE_DECLS
 
-#define ND(name) \
-class name : public Node { \
-public:              \
-  name(Node *l, Node *r) : lhs(l), rhs(r) {} \
-  Node *lhs, *rhs;   \
-};
+#define ND(name)                                                                                   \
+  class name : public Node {                                                                       \
+  public:                                                                                          \
+    name(Node *l, Node *r) : lhs(l), rhs(r) {}                                                     \
+    Node *lhs, *rhs;                                                                               \
+  };
 
 OP_NODE_DECLS
 
@@ -38,10 +38,12 @@ class NodeVisitor;
 
 using DerivedNodes = std::tuple<AddNode, SubNode, MulNode, DivNode, NumNode>;
 
-template<typename R, typename ...Args>
-class NodeVisitor<R(Args...)> : public GeneralVisitor<NodeVisitor<R(Args...)>, Node, DerivedNodes, R(Args...)> {
+template<typename R, typename... Args>
+class NodeVisitor<R(Args...)>
+    : public GeneralVisitor<NodeVisitor<R(Args...)>, Node, DerivedNodes, R(Args...)> {
 public:
-#define ND(name) virtual R ImplVisit(name *, Args ...) { throw std::runtime_error("not implemented"); }
+#define ND(name)                                                                                   \
+  virtual R ImplVisit(name *, Args...) { throw std::runtime_error("not implemented"); }
   NODE_DECLS
 #undef ND
 };
@@ -50,4 +52,4 @@ public:
 #undef OP_NODE_DECLS
 
 
-#endif //UNTITLED_NODE_H
+#endif//UNTITLED_NODE_H
