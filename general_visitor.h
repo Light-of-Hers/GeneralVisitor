@@ -11,30 +11,41 @@
 #include <type_traits>
 #include <typeindex>
 
-template<typename Base, typename Func>
+template<typename BasePtr, typename Func>
 class default_vtable {
 public:
   template<typename T>
   inline void Set(Func f) {
     data_[std::type_index(typeid(T))] = f;
   }
-  inline Func Get(Base *base) { return data_[std::type_index(typeid(*base))]; }
+  inline Func Get(BasePtr base) { return data_[std::type_index(typeid(*base))]; }
 
 private:
   std::map<std::type_index, Func> data_;
 };
 
-template<typename, typename, typename, typename,
+template<typename Base>
+class default_pointer {
+public:
+  using type = Base *;
+  template<typename Derived>
+  static Derived *cast(Base *base) {
+    return static_cast<Derived *>(base);
+  }
+};
+
+template<typename, typename Base, typename, typename, typename = default_pointer<Base>,
          template<typename, typename> typename = default_vtable>
 class GeneralVisitor;
 
-template<typename Visitor, typename Base, typename... Deriveds,
+template<typename Visitor, typename Base, typename... Deriveds, typename Pointer,
          template<typename, typename> typename Vtable, typename R, typename... Args>
-class GeneralVisitor<Visitor, Base, std::tuple<Deriveds...>, R(Args...), Vtable> {
-  using VtableType = Vtable<Base, R (*)(Visitor *, Base *, Args...)>;
+class GeneralVisitor<Visitor, Base, std::tuple<Deriveds...>, R(Args...), Pointer, Vtable> {
+  using BasePtr = typename Pointer::type;
+  using VtableType = Vtable<BasePtr, R (*)(Visitor *, BasePtr, Args...)>;
 
 public:
-  R Visit(Base *base, Args... args) {
+  R Visit(BasePtr base, Args... args) {
     static VtableType vtable = BuildVtable();
     return vtable.Get(base)(static_cast<Visitor *>(this), base, std::forward<Args>(args)...);
   }
@@ -42,8 +53,8 @@ public:
 private:
   template<typename Derived, typename... Rest>
   static void Register(VtableType &vtable) {
-    vtable.template Set<Derived>([](Visitor *visitor, Base *base, Args... args) -> R {
-      return visitor->ImplVisit(static_cast<Derived *>(base), std::forward<Args>(args)...);
+    vtable.template Set<Derived>([](Visitor *visitor, BasePtr base, Args... args) -> R {
+      return visitor->ImplVisit(Pointer::template cast<Derived>(base), std::forward<Args>(args)...);
     });
     if constexpr (sizeof...(Rest) > 0) { Register<Rest...>(vtable); }
   }
