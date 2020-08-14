@@ -29,7 +29,7 @@ class default_pointer {
 public:
   using type = Base *;
   template<typename Derived>
-  static Derived *cast(Base *base) {
+  static inline Derived *cast(Base *base) {
     return static_cast<Derived *>(base);
   }
 };
